@@ -1,0 +1,849 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Dashboard — Smart Study Agent</title>
+  <style>
+    /* ── Reset & Variables ───────────────────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg-top:     #ede7f6;
+      --bg-bot:     #f3eefb;
+      --glass:      rgba(255,255,255,0.55);
+      --glass-hv:   rgba(255,255,255,0.72);
+      --glass-bd:   rgba(255,255,255,0.82);
+      --blur:       18px;
+      --thistle:    #9b7ec8;
+      --thistle-dk: #7c5cb4;
+      --thistle-lt: #c4a8e8;
+      --green:      #059669;
+      --red:        #dc2626;
+      --text:       #1e1b2e;
+      --text2:      #2d2540;
+      --muted:      #6b5f82;
+      --border:     rgba(155,126,200,0.22);
+      --radius:     14px;
+      --sidebar:    240px;
+      --header:     64px;
+    }
+    html { font-size: 15px; scroll-behavior: smooth; }
+    body {
+      font-family: -apple-system, "Segoe UI", system-ui, sans-serif;
+      background: linear-gradient(145deg, var(--bg-top) 0%, var(--bg-bot) 100%);
+      background-attachment: fixed;
+      color: var(--text);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+    /* decorative blobs */
+    body::before, body::after {
+      content: ''; position: fixed; border-radius: 50%;
+      filter: blur(90px); opacity: 0.30; pointer-events: none; z-index: 0;
+    }
+    body::before {
+      width: 560px; height: 560px;
+      background: radial-gradient(circle, #d1b3f5, transparent 70%);
+      top: -140px; left: -140px;
+    }
+    body::after {
+      width: 440px; height: 440px;
+      background: radial-gradient(circle, #c4a8e8, transparent 70%);
+      bottom: -100px; right: -100px;
+    }
+
+    /* ── Scrollbar ───────────────────────────────────────────────────────────── */
+    ::-webkit-scrollbar { width: 5px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: rgba(100,116,139,0.25); border-radius: 3px; }
+
+    /* ── Header ──────────────────────────────────────────────────────────────── */
+    header {
+      position: sticky; top: 0; z-index: 200;
+      height: var(--header);
+      backdrop-filter: blur(var(--blur));
+      -webkit-backdrop-filter: blur(var(--blur));
+      background: rgba(255,255,255,0.68);
+      border-bottom: 1px solid var(--glass-bd);
+      padding: 0 1.5rem;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .logo {
+      display: flex; align-items: center; gap: 10px;
+      font-size: 1.1rem; font-weight: 800; color: var(--thistle-dk); text-decoration: none;
+    }
+    .logo-icon {
+      width: 36px; height: 36px; border-radius: 10px;
+      background: linear-gradient(135deg, var(--thistle), var(--thistle-dk));
+      display: flex; align-items: center; justify-content: center; font-size: 1.1rem; color: #fff;
+    }
+    .header-right { display: flex; align-items: center; gap: 0.75rem; }
+    .badge {
+      font-size: 0.7rem; font-weight: 700; letter-spacing: 0.04em;
+      padding: 3px 9px; border-radius: 20px;
+      background: rgba(155,126,200,0.12); color: var(--thistle-dk);
+      border: 1px solid rgba(155,126,200,0.28);
+    }
+    .badge-green {
+      background: rgba(5,150,105,0.10); color: var(--green);
+      border-color: rgba(5,150,105,0.22);
+    }
+
+    /* ── Profile Icon ────────────────────────────────────────────────────────── */
+    .profile-btn {
+      position: relative; cursor: pointer;
+      display: flex; align-items: center; gap: 8px;
+      background: var(--glass); border: 1.5px solid var(--glass-bd);
+      border-radius: 40px; padding: 4px 12px 4px 4px;
+      transition: background 0.18s;
+    }
+    .profile-btn:hover { background: rgba(255,255,255,0.80); }
+    .avatar {
+      width: 34px; height: 34px; border-radius: 50%;
+      background: linear-gradient(135deg, var(--thistle), var(--thistle-dk));
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.95rem; color: #fff; font-weight: 700; flex-shrink: 0;
+    }
+    .profile-name { font-size: 0.85rem; font-weight: 600; color: var(--text); max-width: 120px;
+                    overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    /* dropdown */
+    .profile-dropdown {
+      display: none; position: absolute; top: calc(100% + 8px); right: 0;
+      backdrop-filter: blur(var(--blur)); -webkit-backdrop-filter: blur(var(--blur));
+      background: rgba(255,255,255,0.90); border: 1px solid var(--glass-bd);
+      border-radius: 12px; min-width: 190px; padding: 0.5rem;
+      box-shadow: 0 8px 32px rgba(155,126,200,0.14); z-index: 300;
+    }
+    .profile-dropdown.open { display: block; }
+    .dd-header {
+      padding: 0.6rem 0.8rem 0.75rem; border-bottom: 1px solid var(--border);
+      margin-bottom: 0.4rem;
+    }
+    .dd-name  { font-weight: 700; font-size: 0.9rem; color: var(--text); }
+    .dd-email { font-size: 0.78rem; color: var(--muted); }
+    .dd-item {
+      display: flex; align-items: center; gap: 8px;
+      padding: 0.5rem 0.8rem; border-radius: 8px; cursor: pointer;
+      font-size: 0.88rem; color: var(--text2); text-decoration: none;
+      transition: background 0.15s;
+    }
+    .dd-item:hover { background: rgba(155,126,200,0.10); }
+    .dd-item.danger { color: var(--red); }
+    .dd-item.danger:hover { background: rgba(220,38,38,0.07); }
+
+    /* ── Layout ──────────────────────────────────────────────────────────────── */
+    .app-body { display: flex; flex: 1; min-height: calc(100vh - var(--header)); position: relative; z-index: 1; }
+
+    /* ── Sidebar ─────────────────────────────────────────────────────────────── */
+    aside {
+      width: var(--sidebar); flex-shrink: 0;
+      backdrop-filter: blur(var(--blur)); -webkit-backdrop-filter: blur(var(--blur));
+      background: rgba(255,255,255,0.52);
+      border-right: 1px solid var(--glass-bd);
+      padding: 1.4rem 0.75rem;
+      overflow-y: auto; position: sticky; top: var(--header);
+      height: calc(100vh - var(--header));
+    }
+    .nav-section-label {
+      font-size: 0.68rem; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase;
+      color: var(--muted); padding: 0.4rem 0.6rem; margin-bottom: 0.3rem; margin-top: 0.6rem;
+    }
+    .nav-item {
+      display: flex; align-items: center; gap: 9px;
+      width: 100%; padding: 0.6rem 0.75rem; border-radius: 10px;
+      background: transparent; border: none; cursor: pointer; text-align: left;
+      color: var(--muted); font-size: 0.88rem; font-weight: 500; font-family: inherit;
+      transition: all 0.16s;
+    }
+    .nav-item:hover  { background: rgba(255,255,255,0.62); color: var(--text); }
+    .nav-item.active {
+      background: rgba(155,126,200,0.14); color: var(--thistle-dk); font-weight: 700;
+      border: 1px solid rgba(155,126,200,0.25);
+    }
+    .nav-item .ni    { font-size: 1rem; width: 20px; text-align: center; flex-shrink: 0; }
+
+    /* ── Main ────────────────────────────────────────────────────────────────── */
+    main { flex: 1; overflow-y: auto; padding: 2rem; }
+
+    /* ── Panel ───────────────────────────────────────────────────────────────── */
+    .panel { display: none; }
+    .panel.active { display: block; }
+
+    .page-title   { font-size: 1.55rem; font-weight: 800; color: var(--text); margin-bottom: 0.3rem; }
+    .page-sub     { color: var(--muted); font-size: 0.88rem; margin-bottom: 2rem; }
+
+    /* ── Glass Card ──────────────────────────────────────────────────────────── */
+    .card {
+      backdrop-filter: blur(var(--blur)); -webkit-backdrop-filter: blur(var(--blur));
+      background: var(--glass); border: 1px solid var(--glass-bd);
+      border-radius: var(--radius); padding: 1.5rem; margin-bottom: 1.5rem;
+    }
+    .card-title { font-size: 0.95rem; font-weight: 700; color: var(--text); margin-bottom: 1rem; }
+
+    /* ── Form ────────────────────────────────────────────────────────────────── */
+    .form-row   { display: grid; gap: 1rem; margin-bottom: 1rem; }
+    .form-row.c2 { grid-template-columns: 1fr 1fr; }
+    .form-row.c3 { grid-template-columns: 1fr 1fr 1fr; }
+    .form-group { display: flex; flex-direction: column; gap: 5px; }
+    label {
+      font-size: 0.75rem; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 0.05em; color: var(--muted);
+    }
+    input[type="text"], input[type="number"], textarea, select {
+      background: rgba(255,255,255,0.75); border: 1.5px solid rgba(203,213,225,0.65);
+      border-radius: 9px; padding: 0.65rem 0.85rem;
+      color: var(--text); font-size: 0.9rem; font-family: inherit;
+      outline: none; width: 100%; transition: border-color 0.18s, background 0.18s;
+    }
+    input:focus, textarea:focus, select:focus {
+      border-color: var(--thistle); background: rgba(255,255,255,0.95);
+    }
+    textarea { resize: vertical; min-height: 76px; line-height: 1.6; }
+    select option { background: #fff; }
+
+    /* ── Buttons ─────────────────────────────────────────────────────────────── */
+    .btn {
+      padding: 0.62rem 1.3rem; border-radius: 9px; border: none; cursor: pointer;
+      font-size: 0.88rem; font-weight: 700; font-family: inherit;
+      display: inline-flex; align-items: center; gap: 6px; transition: all 0.18s;
+    }
+    .btn-primary { background: var(--thistle); color: #fff; }
+    .btn-primary:hover { background: var(--thistle-dk); }
+    .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+    .btn-ghost {
+      background: rgba(255,255,255,0.6); color: var(--text2);
+      border: 1px solid var(--border);
+    }
+    .btn-ghost:hover { background: rgba(255,255,255,0.90); }
+    .btn-sm { padding: 0.38rem 0.78rem; font-size: 0.8rem; }
+
+    /* ── Result Box ──────────────────────────────────────────────────────────── */
+    .result-box {
+      background: rgba(255,255,255,0.68); border: 1px solid var(--glass-bd);
+      border-radius: 10px; padding: 1.2rem 1.3rem;
+      font-size: 0.9rem; line-height: 1.75; white-space: pre-wrap; word-break: break-word;
+    }
+    .result-box h1, .result-box h2, .result-box h3 { color: var(--thistle-dk); margin: 0.9rem 0 0.35rem; }
+    .result-box h1 { font-size: 1.1rem; }
+    .result-box h2 { font-size: 1rem;   }
+    .result-box h3 { font-size: 0.93rem;}
+    .result-box ul, .result-box ol { padding-left: 1.4rem; }
+    .result-box li { margin-bottom: 0.28rem; }
+    .result-box strong { color: var(--text); }
+
+    /* ── Spinner / Loading ───────────────────────────────────────────────────── */
+    .loading { display: flex; align-items: center; gap: 9px; color: var(--muted); font-size: 0.88rem; }
+    .spinner {
+      width: 17px; height: 17px; border: 2px solid rgba(155,126,200,0.20);
+      border-top-color: var(--thistle); border-radius: 50%; animation: spin 0.65s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── Alerts ──────────────────────────────────────────────────────────────── */
+    .alert { padding: 0.7rem 1rem; border-radius: 9px; font-size: 0.86rem; margin-bottom: 1rem; line-height: 1.5; }
+    .alert-error  { background: rgba(220,38,38,0.08); border: 1px solid rgba(220,38,38,0.25); color: var(--red); }
+    .alert-success{ background: rgba(5,150,105,0.08); border: 1px solid rgba(5,150,105,0.25); color: var(--green); }
+    .alert-info   { background: rgba(155,126,200,0.09); border: 1px solid rgba(155,126,200,0.28); color: var(--thistle-dk); }
+
+    /* ── Dashboard stats ─────────────────────────────────────────────────────── */
+    .stat-grid {
+      display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 1rem; margin-bottom: 2rem;
+    }
+    .stat-card {
+      backdrop-filter: blur(var(--blur)); -webkit-backdrop-filter: blur(var(--blur));
+      background: var(--glass); border: 1px solid var(--glass-bd);
+      border-radius: var(--radius); padding: 1.2rem 1.3rem;
+    }
+    .stat-val { font-size: 2rem; font-weight: 900; color: var(--thistle-dk); line-height: 1; }
+    .stat-lbl { color: var(--muted); font-size: 0.83rem; margin-top: 0.3rem; }
+    .prog { background: rgba(155,126,200,0.14); border-radius: 4px; height: 5px; margin-top: 0.7rem; overflow: hidden; }
+    .prog-fill { height: 100%; background: linear-gradient(90deg, var(--thistle), var(--thistle-dk)); border-radius: 4px; transition: width 0.4s; }
+
+    /* ── Feature quick-start cards ───────────────────────────────────────────── */
+    .feat-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 1rem; }
+    .feat-card {
+      backdrop-filter: blur(var(--blur)); -webkit-backdrop-filter: blur(var(--blur));
+      background: var(--glass); border: 1px solid var(--glass-bd);
+      border-radius: var(--radius); padding: 1.4rem; cursor: pointer; transition: all 0.18s;
+    }
+    .feat-card:hover { background: var(--glass-hv); transform: translateY(-3px); box-shadow: 0 8px 24px rgba(155,126,200,0.12); }
+    .feat-icon-wrap {
+      width: 42px; height: 42px; border-radius: 12px; margin-bottom: 0.9rem;
+      background: linear-gradient(135deg, rgba(155,126,200,0.14), rgba(124,92,180,0.12));
+      border: 1px solid rgba(155,126,200,0.22);
+      display: flex; align-items: center; justify-content: center; font-size: 1.2rem;
+    }
+    .feat-title { font-weight: 700; font-size: 0.9rem; margin-bottom: 0.3rem; }
+    .feat-desc  { color: var(--muted); font-size: 0.82rem; line-height: 1.55; }
+
+    /* ── Flashcards ──────────────────────────────────────────────────────────── */
+    .fc-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(270px, 1fr)); gap: 1rem; margin-top: 1rem; }
+    .fc {
+      backdrop-filter: blur(var(--blur)); -webkit-backdrop-filter: blur(var(--blur));
+      background: var(--glass); border: 1px solid var(--glass-bd);
+      border-radius: var(--radius); padding: 1.2rem; cursor: pointer; min-height: 115px;
+      transition: all 0.18s;
+    }
+    .fc:hover { background: var(--glass-hv); border-color: rgba(155,126,200,0.42); }
+    .fc.flipped { border-color: rgba(5,150,105,0.40); background: rgba(236,253,245,0.65); }
+    .fc-lbl { font-size: 0.68rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); margin-bottom: 0.5rem; }
+    .fc.flipped .fc-lbl { color: var(--green); }
+    .fc-front { font-weight: 600; color: var(--text); line-height: 1.5; font-size: 0.9rem; }
+    .fc-back {
+      display: none; color: var(--green); font-size: 0.88rem; line-height: 1.6;
+      margin-top: 0.7rem; padding-top: 0.7rem; border-top: 1px solid rgba(5,150,105,0.20);
+    }
+    .fc.flipped .fc-back { display: block; }
+
+    /* ── Quiz ────────────────────────────────────────────────────────────────── */
+    .qq {
+      backdrop-filter: blur(var(--blur)); -webkit-backdrop-filter: blur(var(--blur));
+      background: var(--glass); border: 1px solid var(--glass-bd);
+      border-radius: var(--radius); padding: 1.4rem; margin-bottom: 1rem;
+    }
+    .qq.correct   { border-color: rgba(5,150,105,0.45); background: rgba(236,253,245,0.60); }
+    .qq.incorrect { border-color: rgba(220,38,38,0.35); background: rgba(254,242,242,0.55); }
+    .q-num  { font-size: 0.72rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; color: var(--thistle-dk); margin-bottom: 0.4rem; }
+    .q-text { font-weight: 600; font-size: 0.93rem; line-height: 1.5; margin-bottom: 1rem; }
+    .opts   { display: grid; gap: 0.55rem; }
+    .opt {
+      background: rgba(255,255,255,0.68); border: 1.5px solid var(--border);
+      border-radius: 8px; padding: 0.62rem 1rem; cursor: pointer; font-size: 0.88rem;
+      transition: all 0.16s; display: flex; align-items: center; gap: 8px;
+    }
+    .opt:hover   { border-color: var(--thistle); background: rgba(155,126,200,0.08); }
+    .opt.sel     { border-color: var(--thistle); background: rgba(155,126,200,0.12); }
+    .opt.correct { border-color: var(--green); background: rgba(5,150,105,0.10); color: var(--green); font-weight: 600; }
+    .opt.wrong   { border-color: var(--red);   background: rgba(220,38,38,0.08); color: var(--red);   font-weight: 600; }
+    .expl {
+      margin-top: 0.75rem; padding: 0.7rem 0.9rem;
+      background: rgba(155,126,200,0.08); border-left: 3px solid var(--thistle);
+      border-radius: 0 8px 8px 0; font-size: 0.84rem; color: var(--text2); line-height: 1.6;
+    }
+    .score-card {
+      text-align: center; padding: 2rem 1.5rem;
+      backdrop-filter: blur(var(--blur)); -webkit-backdrop-filter: blur(var(--blur));
+      background: var(--glass); border: 1px solid var(--glass-bd);
+      border-radius: var(--radius); margin-top: 1rem;
+    }
+    .score-num { font-size: 3.5rem; font-weight: 900; color: var(--thistle-dk); }
+    .score-lbl { color: var(--muted); font-size: 0.9rem; margin-top: 0.2rem; }
+
+    /* ── Chat ────────────────────────────────────────────────────────────────── */
+    .chat-wrap { display: flex; flex-direction: column; height: calc(100vh - 220px); min-height: 360px; }
+    .chat-msgs {
+      flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 0.9rem;
+      padding: 1rem;
+      backdrop-filter: blur(var(--blur)); -webkit-backdrop-filter: blur(var(--blur));
+      background: rgba(255,255,255,0.42); border: 1px solid var(--glass-bd);
+      border-radius: var(--radius); margin-bottom: 1rem;
+    }
+    .msg { max-width: 78%; border-radius: 12px; padding: 0.7rem 0.95rem; font-size: 0.88rem; line-height: 1.6; }
+    .msg.user {
+      background: var(--thistle); color: #fff; align-self: flex-end; border-bottom-right-radius: 3px;
+    }
+    .msg.bot {
+      background: rgba(255,255,255,0.78); border: 1px solid var(--glass-bd);
+      color: var(--text); align-self: flex-start; border-bottom-left-radius: 3px;
+      white-space: pre-wrap;
+    }
+    .msg.sys {
+      background: transparent; border: 1px dashed rgba(148,163,184,0.4);
+      color: var(--muted); align-self: center; font-size: 0.8rem; font-style: italic;
+      max-width: 100%; text-align: center; border-radius: 8px;
+    }
+    .chat-row { display: flex; gap: 0.7rem; }
+    .chat-row textarea { flex: 1; min-height: 46px; max-height: 110px; resize: none; }
+
+    /* ── Responsive ──────────────────────────────────────────────────────────── */
+    @media (max-width: 768px) {
+      aside { display: none; }
+      .form-row.c2, .form-row.c3 { grid-template-columns: 1fr; }
+      main { padding: 1rem; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ── Header ──────────────────────────────────────────────────────────────── -->
+<header>
+  <a class="logo" href="/dashboard">
+    <div class="logo-icon">🎓</div>
+    Smart Study Agent
+  </a>
+  <div class="header-right">
+    <span class="badge">IBM Granite-4</span>
+    <span class="badge badge-green">watsonx.ai</span>
+
+    <!-- Profile Icon -->
+    <div class="profile-btn" id="profileBtn" onclick="toggleDropdown()">
+      <div class="avatar" id="avatarInitial">?</div>
+      <span class="profile-name" id="profileName">User</span>
+      <svg width="12" height="12" viewBox="0 0 12 12" fill="none" style="color:var(--muted);">
+        <path d="M2 4l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+
+      <div class="profile-dropdown" id="profileDropdown">
+        <div class="dd-header">
+          <div class="dd-name"  id="ddName">—</div>
+          <div class="dd-email" id="ddEmail">—</div>
+        </div>
+        <a class="dd-item danger" href="/logout">
+          <span>🚪</span> Sign Out
+        </a>
+      </div>
+    </div>
+  </div>
+</header>
+
+<div class="app-body">
+
+  <!-- ── Sidebar ─────────────────────────────────────────────────────────── -->
+  <aside>
+    <div class="nav-section-label">Menu</div>
+    <button class="nav-item active" onclick="showPanel('summary')">
+      <span class="ni">📄</span> Summary
+    </button>
+    <button class="nav-item" onclick="showPanel('plan')">
+      <span class="ni">📅</span> Study Plan
+    </button>
+    <button class="nav-item" onclick="showPanel('flashcards')">
+      <span class="ni">🃏</span> Flashcards
+    </button>
+    <button class="nav-item" onclick="showPanel('quiz')">
+      <span class="ni">🎯</span> Quiz
+    </button>
+    <button class="nav-item" onclick="showPanel('explain')">
+      <span class="ni">💡</span> Explain
+    </button>
+    <button class="nav-item" onclick="showPanel('chat')">
+      <span class="ni">💬</span> Study Chat
+    </button>
+    <div style="margin-top:auto; padding-top:2rem;">
+      <a href="/logout" class="nav-item" style="color:var(--red);">
+        <span class="ni">🚪</span> Sign Out
+      </a>
+    </div>
+  </aside>
+
+  <!-- ── Main ────────────────────────────────────────────────────────────── -->
+  <main>
+
+    <!-- ═══ SUMMARY ══════════════════════════════════════════════════════════ -->
+    <div id="panel-summary" class="panel active">
+      <div class="page-title">📄 Topic Summary</div>
+      <div class="page-sub">Generate a comprehensive, structured summary of any topic</div>
+      <div class="card">
+        <div class="form-row c2">
+          <div class="form-group">
+            <label for="sum-topic">Topic</label>
+            <input type="text" id="sum-topic" placeholder="e.g., Photosynthesis, World War II…"/>
+          </div>
+          <div class="form-group">
+            <label for="sum-level">Level</label>
+            <select id="sum-level">
+              <option value="beginner">Beginner</option>
+              <option value="intermediate" selected>Intermediate</option>
+              <option value="advanced">Advanced</option>
+            </select>
+          </div>
+        </div>
+        <button class="btn btn-primary" id="btn-sum" onclick="doSummary()">✨ Generate Summary</button>
+      </div>
+      <div id="sum-result" style="display:none;">
+        <div class="card">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.9rem;">
+            <div class="card-title" style="margin:0;">📋 Summary</div>
+            <button class="btn btn-ghost btn-sm" onclick="copyEl('sum-content')">📋 Copy</button>
+          </div>
+          <div id="sum-content" class="result-box"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ STUDY PLAN ════════════════════════════════════════════════════════ -->
+    <div id="panel-plan" class="panel">
+      <div class="page-title">📅 Study Plan Generator</div>
+      <div class="page-sub">Create a personalised, day-by-day study schedule</div>
+      <div class="card">
+        <div class="form-row c3">
+          <div class="form-group">
+            <label for="pl-topic">Topic / Subject</label>
+            <input type="text" id="pl-topic" placeholder="e.g., Calculus, Spanish…"/>
+          </div>
+          <div class="form-group">
+            <label for="pl-days">Duration (days)</label>
+            <input type="number" id="pl-days" value="7" min="1" max="90"/>
+          </div>
+          <div class="form-group">
+            <label for="pl-hours">Hours / Day</label>
+            <input type="number" id="pl-hours" value="2" min="0.5" max="12" step="0.5"/>
+          </div>
+        </div>
+        <button class="btn btn-primary" id="btn-plan" onclick="doPlan()">📅 Create Study Plan</button>
+      </div>
+      <div id="plan-result" style="display:none;">
+        <div class="card">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.9rem;">
+            <div class="card-title" style="margin:0;">🗓️ Your Study Plan</div>
+            <button class="btn btn-ghost btn-sm" onclick="copyEl('plan-content')">📋 Copy</button>
+          </div>
+          <div id="plan-content" class="result-box"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ FLASHCARDS ════════════════════════════════════════════════════════ -->
+    <div id="panel-flashcards" class="panel">
+      <div class="page-title">🃏 Flashcard Generator</div>
+      <div class="page-sub">Click a card to reveal the answer</div>
+      <div class="card">
+        <div class="form-row c2">
+          <div class="form-group">
+            <label for="fc-topic">Topic</label>
+            <input type="text" id="fc-topic" placeholder="e.g., Organic Chemistry…"/>
+          </div>
+          <div class="form-group">
+            <label for="fc-count">Number of Cards</label>
+            <select id="fc-count">
+              <option value="5">5 cards</option>
+              <option value="10" selected>10 cards</option>
+              <option value="15">15 cards</option>
+              <option value="20">20 cards</option>
+            </select>
+          </div>
+        </div>
+        <button class="btn btn-primary" id="btn-fc" onclick="doFlashcards()">🃏 Generate Flashcards</button>
+      </div>
+      <div id="fc-result" style="display:none;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.8rem;">
+          <div style="font-weight:700;" id="fc-lbl"></div>
+          <button class="btn btn-ghost btn-sm" onclick="resetCards()">🔄 Reset All</button>
+        </div>
+        <div class="fc-grid" id="fc-grid"></div>
+      </div>
+    </div>
+
+    <!-- ═══ QUIZ ══════════════════════════════════════════════════════════════ -->
+    <div id="panel-quiz" class="panel">
+      <div class="page-title">🎯 Quiz Generator</div>
+      <div class="page-sub">Test your knowledge with AI-generated multiple-choice questions</div>
+      <div class="card" id="quiz-setup">
+        <div class="form-row c2">
+          <div class="form-group">
+            <label for="qz-topic">Topic</label>
+            <input type="text" id="qz-topic" placeholder="e.g., Cell Biology, JavaScript…"/>
+          </div>
+          <div class="form-group">
+            <label for="qz-count">Questions</label>
+            <select id="qz-count">
+              <option value="3">3 questions</option>
+              <option value="5" selected>5 questions</option>
+              <option value="8">8 questions</option>
+              <option value="10">10 questions</option>
+            </select>
+          </div>
+        </div>
+        <button class="btn btn-primary" id="btn-qz" onclick="doQuiz()">🎯 Start Quiz</button>
+      </div>
+      <div id="quiz-result" style="display:none;"></div>
+    </div>
+
+    <!-- ═══ EXPLAIN ═══════════════════════════════════════════════════════════ -->
+    <div id="panel-explain" class="panel">
+      <div class="page-title">💡 Concept Explainer</div>
+      <div class="page-sub">Get any concept explained at your preferred depth</div>
+      <div class="card">
+        <div class="form-row c2">
+          <div class="form-group">
+            <label for="ex-concept">Concept</label>
+            <input type="text" id="ex-concept" placeholder="e.g., Quantum entanglement, Recursion…"/>
+          </div>
+          <div class="form-group">
+            <label for="ex-style">Style</label>
+            <select id="ex-style">
+              <option value="simple">Simple (ELI10)</option>
+              <option value="detailed" selected>Detailed</option>
+              <option value="visual">Visual / Analogies</option>
+            </select>
+          </div>
+        </div>
+        <button class="btn btn-primary" id="btn-ex" onclick="doExplain()">💡 Explain It</button>
+      </div>
+      <div id="ex-result" style="display:none;">
+        <div class="card">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.9rem;">
+            <div class="card-title" style="margin:0;">🧠 Explanation</div>
+            <button class="btn btn-ghost btn-sm" onclick="copyEl('ex-content')">📋 Copy</button>
+          </div>
+          <div id="ex-content" class="result-box"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ CHAT ══════════════════════════════════════════════════════════════ -->
+    <div id="panel-chat" class="panel">
+      <div class="page-title">💬 Study Chat</div>
+      <div class="page-sub">Ask your AI tutor anything — powered by IBM Granite-4</div>
+      <div class="chat-wrap">
+        <div class="chat-msgs" id="chat-msgs">
+          <div class="msg sys">Hi! I'm your AI study assistant. Ask me anything about your studies!</div>
+        </div>
+        <div class="chat-row">
+          <textarea id="chat-inp" placeholder="Ask a question… (Enter to send, Shift+Enter for newline)"
+            onkeydown="chatKey(event)"></textarea>
+          <button class="btn btn-primary" id="btn-chat" onclick="doChat()">Send</button>
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<!-- ── JavaScript ──────────────────────────────────────────────────────────── -->
+<script>
+  // ── User info from Jinja2 ──────────────────────────────────────────────────
+  const USER = {{ user | tojson }};
+  document.getElementById('profileName').textContent   = USER.name;
+  document.getElementById('ddName').textContent        = USER.name;
+  document.getElementById('ddEmail').textContent       = USER.email;
+  document.getElementById('avatarInitial').textContent = USER.name.charAt(0).toUpperCase();
+
+  // ── Profile dropdown ───────────────────────────────────────────────────────
+  function toggleDropdown() {
+    document.getElementById('profileDropdown').classList.toggle('open');
+  }
+  document.addEventListener('click', e => {
+    if (!document.getElementById('profileBtn').contains(e.target))
+      document.getElementById('profileDropdown').classList.remove('open');
+  });
+
+  // ── Panel navigation — no page redirects, purely in-page ──────────────────
+  function showPanel(id) {
+    document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.nav-item[onclick]').forEach(b => b.classList.remove('active'));
+    const panel = document.getElementById('panel-' + id);
+    if (panel) panel.classList.add('active');
+    document.querySelectorAll('.nav-item[onclick]').forEach(b => {
+      if (b.getAttribute('onclick').includes("'" + id + "'")) b.classList.add('active');
+    });
+  }
+
+  // ── Helpers ────────────────────────────────────────────────────────────────
+  function setLoading(id, on, lbl) {
+    const b = document.getElementById(id);
+    b.disabled = on;
+    b.innerHTML = on ? '<span class="spinner"></span> Generating…' : lbl;
+  }
+  function md(t) {
+    return t
+      .replace(/^### (.+)$/gm,'<h3>$1</h3>')
+      .replace(/^## (.+)$/gm, '<h2>$1</h2>')
+      .replace(/^# (.+)$/gm,  '<h1>$1</h1>')
+      .replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>')
+      .replace(/\*(.+?)\*/g,   '<em>$1</em>')
+      .replace(/^[-•] (.+)$/gm,'<li>$1</li>');
+  }
+  function copyEl(id) {
+    const el = document.getElementById(id);
+    navigator.clipboard.writeText(el.innerText || el.textContent).then(() => {
+      const b = el.closest('.card').querySelector('.btn-ghost');
+      if (b) { b.textContent = 'Copied!'; setTimeout(() => b.innerHTML = '📋 Copy', 2000); }
+    });
+  }
+  function errBox(msg) { return `<div class="alert alert-error">${msg}</div>`; }
+
+  // ── Summary ────────────────────────────────────────────────────────────────
+  async function doSummary() {
+    const topic = document.getElementById('sum-topic').value.trim();
+    const level = document.getElementById('sum-level').value;
+    if (!topic) { alert('Please enter a topic.'); return; }
+    setLoading('btn-sum', true, '✨ Generate Summary');
+    document.getElementById('sum-result').style.display = 'none';
+    document.getElementById('sum-content').innerHTML = '';
+    try {
+      const r = await fetch('/api/summary', { method:'POST',
+        headers:{'Content-Type':'application/json'}, body: JSON.stringify({topic,level}) });
+      const d = await r.json();
+      if (d.error) throw new Error(d.error);
+      document.getElementById('sum-content').innerHTML = md(d.summary);
+      document.getElementById('sum-result').style.display = 'block';
+    } catch(e) {
+      document.getElementById('sum-content').innerHTML = errBox(e.message);
+      document.getElementById('sum-result').style.display = 'block';
+    } finally { setLoading('btn-sum', false, '✨ Generate Summary'); }
+  }
+
+  // ── Study Plan ─────────────────────────────────────────────────────────────
+  async function doPlan() {
+    const topic = document.getElementById('pl-topic').value.trim();
+    const days  = +document.getElementById('pl-days').value;
+    const hours = +document.getElementById('pl-hours').value;
+    if (!topic) { alert('Please enter a topic.'); return; }
+    setLoading('btn-plan', true, '📅 Create Study Plan');
+    document.getElementById('plan-result').style.display = 'none';
+    document.getElementById('plan-content').innerHTML = '';
+    try {
+      const r = await fetch('/api/study_plan', { method:'POST',
+        headers:{'Content-Type':'application/json'}, body: JSON.stringify({topic,days,hours_per_day:hours}) });
+      const d = await r.json();
+      if (d.error) throw new Error(d.error);
+      document.getElementById('plan-content').innerHTML = md(d.plan);
+      document.getElementById('plan-result').style.display = 'block';
+    } catch(e) {
+      document.getElementById('plan-content').innerHTML = errBox(e.message);
+      document.getElementById('plan-result').style.display = 'block';
+    } finally { setLoading('btn-plan', false, '📅 Create Study Plan'); }
+  }
+
+  // ── Flashcards ─────────────────────────────────────────────────────────────
+  async function doFlashcards() {
+    const topic = document.getElementById('fc-topic').value.trim();
+    const count = +document.getElementById('fc-count').value;
+    if (!topic) { alert('Please enter a topic.'); return; }
+    setLoading('btn-fc', true, '🃏 Generate Flashcards');
+    document.getElementById('fc-result').style.display = 'none';
+    document.getElementById('fc-grid').innerHTML = '';
+    try {
+      const r = await fetch('/api/flashcards', { method:'POST',
+        headers:{'Content-Type':'application/json'}, body: JSON.stringify({topic,count}) });
+      const d = await r.json();
+      if (d.error) throw new Error(d.error);
+      const grid = document.getElementById('fc-grid');
+      grid.innerHTML = (d.flashcards||[]).map(c => `
+        <div class="fc" onclick="this.classList.toggle('flipped')">
+          <div class="fc-lbl">Tap to reveal answer</div>
+          <div class="fc-front">${c.front}</div>
+          <div class="fc-back">${c.back}</div>
+        </div>`).join('');
+      document.getElementById('fc-lbl').textContent = `${d.flashcards.length} cards — ${topic}`;
+      document.getElementById('fc-result').style.display = 'block';
+    } catch(e) {
+      document.getElementById('fc-grid').innerHTML = errBox(e.message);
+      document.getElementById('fc-result').style.display = 'block';
+    } finally { setLoading('btn-fc', false, '🃏 Generate Flashcards'); }
+  }
+  function resetCards() { document.querySelectorAll('.fc').forEach(c => c.classList.remove('flipped')); }
+
+  // ── Quiz ───────────────────────────────────────────────────────────────────
+  let qData = [], qAns = {};
+  async function doQuiz() {
+    const topic = document.getElementById('qz-topic').value.trim();
+    const count = +document.getElementById('qz-count').value;
+    if (!topic) { alert('Please enter a topic.'); return; }
+    setLoading('btn-qz', true, '🎯 Start Quiz');
+    qData = []; qAns = {};
+    document.getElementById('quiz-result').style.display = 'none';
+    try {
+      const r = await fetch('/api/quiz', { method:'POST',
+        headers:{'Content-Type':'application/json'}, body: JSON.stringify({topic,count}) });
+      const d = await r.json();
+      if (d.error) throw new Error(d.error);
+      qData = d.quiz || [];
+      renderQuiz(qData, topic);
+      document.getElementById('quiz-result').style.display = 'block';
+    } catch(e) {
+      document.getElementById('quiz-result').style.display = 'block';
+      document.getElementById('quiz-result').innerHTML = errBox(e.message);
+    } finally { setLoading('btn-qz', false, '🎯 Start Quiz'); }
+  }
+  function renderQuiz(qs, topic) {
+    const c = document.getElementById('quiz-result');
+    let h = `<div style="font-weight:700;margin-bottom:1rem;">${qs.length} Questions — ${topic}</div>`;
+    qs.forEach((q, qi) => {
+      h += `<div class="qq" id="qq-${qi}">
+        <div class="q-num">Question ${qi+1} of ${qs.length}</div>
+        <div class="q-text">${q.question}</div>
+        <div class="opts" id="opts-${qi}">`;
+      (q.options||[]).forEach((o, oi) => {
+        h += `<div class="opt" id="op-${qi}-${oi}" onclick="pickOpt(${qi},${oi},'${q.answer}',\`${(q.explanation||'').replace(/`/g,"'")}\`)">${o}</div>`;
+      });
+      h += `</div><div class="expl" id="expl-${qi}" style="display:none;">💡 ${q.explanation||''}</div></div>`;
+    });
+    h += `<div style="text-align:right;margin-top:1rem;">
+      <button class="btn btn-primary" onclick="submitQuiz()">Submit Quiz 🎓</button></div>`;
+    c.innerHTML = h;
+  }
+  function pickOpt(qi, oi, ans, expl) {
+    if (qAns[qi] !== undefined) return;
+    qAns[qi] = oi;
+    const ci = ['A','B','C','D'].indexOf(ans.toUpperCase());
+    const opts = document.querySelectorAll(`#opts-${qi} .opt`);
+    opts[oi].classList.add(oi === ci ? 'correct' : 'wrong');
+    if (oi !== ci && ci >= 0 && opts[ci]) opts[ci].classList.add('correct');
+    const ex = document.getElementById(`expl-${qi}`); if (ex) ex.style.display = 'block';
+  }
+  function submitQuiz() {
+    if (Object.keys(qAns).length < qData.length &&
+        !confirm(`Answered ${Object.keys(qAns).length}/${qData.length}. Submit anyway?`)) return;
+    let ok = 0;
+    qData.forEach((q, qi) => {
+      const ci = ['A','B','C','D'].indexOf((q.answer||'').toUpperCase());
+      if (qAns[qi] === ci) ok++;
+      const el = document.getElementById(`qq-${qi}`);
+      if (el) el.classList.add(qAns[qi] === ci ? 'correct' : 'incorrect');
+    });
+    const pct = Math.round(ok / qData.length * 100);
+    document.getElementById('quiz-result').insertAdjacentHTML('beforeend',
+      `<div class="score-card">
+        <div class="score-num">${pct}%</div>
+        <div class="score-lbl">${ok} / ${qData.length} correct</div>
+        <div style="margin-top:1.2rem;">
+          <button class="btn btn-primary" onclick="doQuiz()">Try Again 🔄</button>
+        </div>
+       </div>`);
+  }
+
+  // ── Explain ────────────────────────────────────────────────────────────────
+  async function doExplain() {
+    const concept = document.getElementById('ex-concept').value.trim();
+    const style   = document.getElementById('ex-style').value;
+    if (!concept) { alert('Please enter a concept.'); return; }
+    setLoading('btn-ex', true, '💡 Explain It');
+    document.getElementById('ex-result').style.display = 'none';
+    try {
+      const r = await fetch('/api/explain', { method:'POST',
+        headers:{'Content-Type':'application/json'}, body: JSON.stringify({concept,style}) });
+      const d = await r.json();
+      if (d.error) throw new Error(d.error);
+      document.getElementById('ex-content').innerHTML = md(d.explanation);
+      document.getElementById('ex-result').style.display = 'block';
+    } catch(e) {
+      document.getElementById('ex-result').style.display = 'block';
+      document.getElementById('ex-result').innerHTML = errBox(e.message);
+    } finally { setLoading('btn-ex', false, '💡 Explain It'); }
+  }
+
+  // ── Chat ───────────────────────────────────────────────────────────────────
+  let chatCtx = '';
+  function appendMsg(role, text) {
+    const d = document.createElement('div');
+    d.className = 'msg ' + role; d.textContent = text;
+    const c = document.getElementById('chat-msgs');
+    c.appendChild(d); c.scrollTop = c.scrollHeight;
+    return d;
+  }
+  function chatKey(e) { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); doChat(); } }
+  async function doChat() {
+    const inp = document.getElementById('chat-inp');
+    const q   = inp.value.trim(); if (!q) return;
+    inp.value = '';
+    appendMsg('user', q);
+    const b = document.getElementById('btn-chat'); b.disabled = true; b.textContent = '…';
+    const thinking = appendMsg('bot', 'Thinking…');
+    try {
+      const r = await fetch('/api/chat', { method:'POST',
+        headers:{'Content-Type':'application/json'}, body: JSON.stringify({question:q,context:chatCtx}) });
+      const d = await r.json();
+      if (d.error) throw new Error(d.error);
+      thinking.textContent = d.answer;
+      chatCtx = q + '\n' + d.answer;
+    } catch(e) {
+      thinking.className = 'msg sys'; thinking.textContent = 'Error: ' + e.message;
+    } finally { b.disabled = false; b.textContent = 'Send'; }
+  }
+
+</script>
+
+</body>
+</html>

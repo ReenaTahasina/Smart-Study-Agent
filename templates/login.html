@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Sign In — Smart Study Agent</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --thistle:    #9b7ec8;
+      --thistle-dk: #7c5cb4;
+      --text:       #1e1b2e;
+      --muted:      #6b5f82;
+      --error:      #c0392b;
+      --glass:      rgba(255,255,255,0.65);
+      --gb:         rgba(255,255,255,0.82);
+      --blur:       22px;
+      --radius:     16px;
+    }
+    html { font-size: 15px; }
+    body {
+      font-family: -apple-system, "Segoe UI", system-ui, sans-serif;
+      min-height: 100vh;
+      background: linear-gradient(145deg, #ede7f6 0%, #f3eefb 100%);
+      background-attachment: fixed;
+      display: flex; flex-direction: column; color: var(--text); overflow-x: hidden;
+    }
+    body::before {
+      content: ''; position: fixed; border-radius: 50%; filter: blur(90px); opacity: 0.40;
+      width: 500px; height: 500px;
+      background: radial-gradient(circle, #d1b3f5, transparent 70%);
+      top: -120px; left: -120px; pointer-events: none;
+    }
+    nav {
+      backdrop-filter: blur(var(--blur)); -webkit-backdrop-filter: blur(var(--blur));
+      background: rgba(255,255,255,0.62); border-bottom: 1px solid rgba(255,255,255,0.82);
+      padding: 0 2rem; height: 60px;
+      display: flex; align-items: center; justify-content: space-between;
+      position: relative; z-index: 10;
+    }
+    .brand { display: flex; align-items: center; gap: 8px; font-size: 1.05rem; font-weight: 800; color: var(--thistle-dk); text-decoration: none; }
+    .brand-icon { width: 32px; height: 32px; border-radius: 8px; background: linear-gradient(135deg, var(--thistle), var(--thistle-dk)); display: flex; align-items: center; justify-content: center; color: #fff; font-size: 1rem; }
+    .page { flex: 1; display: flex; align-items: center; justify-content: center; padding: 2rem; position: relative; z-index: 1; }
+    .card {
+      backdrop-filter: blur(var(--blur)); -webkit-backdrop-filter: blur(var(--blur));
+      background: var(--glass); border: 1px solid rgba(255,255,255,0.88);
+      border-radius: var(--radius); padding: 2.5rem 2.25rem;
+      width: 100%; max-width: 420px;
+      box-shadow: 0 8px 40px rgba(155,126,200,0.12);
+    }
+    .card-icon { width: 54px; height: 54px; border-radius: 14px; margin: 0 auto 1.2rem; background: linear-gradient(135deg, rgba(155,126,200,0.16), rgba(124,92,180,0.14)); border: 1px solid rgba(155,126,200,0.25); display: flex; align-items: center; justify-content: center; font-size: 1.6rem; }
+    h1 { text-align: center; font-size: 1.5rem; font-weight: 800; margin-bottom: 0.35rem; color: var(--text); }
+    .sub { text-align: center; color: var(--muted); font-size: 0.88rem; margin-bottom: 1.8rem; }
+    .form-group { margin-bottom: 1.1rem; }
+    label { display: block; font-size: 0.76rem; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 6px; }
+    input[type="email"], input[type="password"] {
+      width: 100%; background: var(--gb); border: 1.5px solid rgba(196,168,232,0.55);
+      border-radius: 9px; padding: 0.7rem 0.9rem; font-size: 0.93rem; font-family: inherit;
+      color: var(--text); outline: none; transition: border-color 0.18s;
+    }
+    input:focus { border-color: var(--thistle); background: #fff; }
+    .error-box { background: rgba(192,57,43,0.08); border: 1px solid rgba(192,57,43,0.25); border-radius: 8px; padding: 0.65rem 0.9rem; color: var(--error); font-size: 0.85rem; margin-bottom: 1.1rem; line-height: 1.5; }
+    .btn-submit { width: 100%; padding: 0.75rem; border-radius: 9px; border: none; cursor: pointer; background: var(--thistle); color: #fff; font-size: 0.95rem; font-weight: 700; font-family: inherit; transition: background 0.18s; margin-top: 0.25rem; }
+    .btn-submit:hover { background: var(--thistle-dk); }
+    .divider { text-align: center; color: var(--muted); font-size: 0.82rem; margin: 1.3rem 0; position: relative; }
+    .divider::before, .divider::after { content: ''; position: absolute; top: 50%; width: calc(50% - 28px); height: 1px; background: rgba(155,126,200,0.25); }
+    .divider::before { left: 0; }
+    .divider::after  { right: 0; }
+    .link-row { text-align: center; font-size: 0.88rem; color: var(--muted); }
+    .link-row a { color: var(--thistle-dk); font-weight: 600; text-decoration: none; }
+    .link-row a:hover { text-decoration: underline; }
+    footer { text-align: center; padding: 1rem; font-size: 0.75rem; color: var(--muted); border-top: 1px solid rgba(255,255,255,0.5); position: relative; z-index: 1; }
+  </style>
+</head>
+<body>
+<nav>
+  <a class="brand" href="/">
+    <div class="brand-icon">🎓</div> Smart Study Agent
+  </a>
+  <a href="/signup" style="font-size:0.85rem;color:var(--thistle-dk);font-weight:600;text-decoration:none;">New here? Sign up</a>
+</nav>
+<div class="page">
+  <div class="card">
+    <div class="card-icon">🔑</div>
+    <h1>Welcome back</h1>
+    <p class="sub">Sign in to continue your studies</p>
+    {% if error %}<div class="error-box">{{ error }}</div>{% endif %}
+    <form method="POST" action="/login">
+      <div class="form-group">
+        <label for="email">Email Address</label>
+        <input type="email" id="email" name="email" placeholder="you@example.com" required autocomplete="email"/>
+      </div>
+      <div class="form-group">
+        <label for="password">Password</label>
+        <input type="password" id="password" name="password" placeholder="••••••••" required autocomplete="current-password"/>
+      </div>
+      <button type="submit" class="btn-submit">Sign In</button>
+    </form>
+    <div class="divider">or</div>
+    <div class="link-row">Don't have an account? <a href="/signup">Create one</a></div>
+  </div>
+</div>
+<footer>Smart Study Agent &mdash; Made with IBM Bob</footer>
+</body>
+</html>
