@@ -388,6 +388,9 @@
           <div class="dd-name"  id="ddName">—</div>
           <div class="dd-email" id="ddEmail">—</div>
         </div>
+        <div class="dd-item" onclick="showPanel('dashboard');toggleDropdown();">
+          <span>📊</span> Dashboard
+        </div>
         <a class="dd-item danger" href="/logout">
           <span>🚪</span> Sign Out
         </a>
@@ -401,6 +404,9 @@
   <!-- ── Sidebar ─────────────────────────────────────────────────────────── -->
   <aside>
     <div class="nav-section-label">Menu</div>
+    <button class="nav-item" onclick="showPanel('home')">
+      <span class="ni">🏠</span> Home
+    </button>
     <button class="nav-item active" onclick="showPanel('summary')">
       <span class="ni">📄</span> Summary
     </button>
@@ -428,6 +434,80 @@
 
   <!-- ── Main ────────────────────────────────────────────────────────────── -->
   <main>
+
+    <!-- ═══ HOME ════════════════════════════════════════════════════════════ -->
+    <div id="panel-home" class="panel">
+      <div class="page-title" style="font-size:2rem;font-weight:900;color:var(--thistle-dk);margin-bottom:1rem;">Welcome</div>
+      <div class="card" style="max-width:620px;text-align:center;padding:2.5rem 2rem;">
+        <div style="font-size:1.15rem;font-style:italic;color:var(--text);line-height:1.8;margin-bottom:0.75rem;">
+          "The beautiful thing about learning is that no one can take it away from you."
+        </div>
+        <div style="font-size:0.85rem;font-weight:700;color:var(--thistle-dk);letter-spacing:0.04em;">— B.B. King</div>
+      </div>
+    </div>
+
+    <!-- ═══ DASHBOARD ════════════════════════════════════════════════════════ -->
+    <div id="panel-dashboard" class="panel">
+      <div class="page-title">📊 Your Progress</div>
+      <div class="page-sub">Usage across all tools this session</div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:1rem;">
+
+        <div class="card" style="margin:0;">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.6rem;">
+            <span style="font-weight:700;font-size:0.9rem;">📄 Summary</span>
+            <span id="pg-sum-count" style="font-size:0.82rem;color:var(--muted);">0 uses</span>
+          </div>
+          <div class="prog"><div class="prog-fill" id="pg-sum-bar" style="width:0%"></div></div>
+          <div id="pg-sum-topic" style="font-size:0.78rem;color:var(--muted);margin-top:0.4rem;">No topic yet</div>
+        </div>
+
+        <div class="card" style="margin:0;">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.6rem;">
+            <span style="font-weight:700;font-size:0.9rem;">📅 Study Plan</span>
+            <span id="pg-plan-count" style="font-size:0.82rem;color:var(--muted);">0 uses</span>
+          </div>
+          <div class="prog"><div class="prog-fill" id="pg-plan-bar" style="width:0%"></div></div>
+          <div id="pg-plan-topic" style="font-size:0.78rem;color:var(--muted);margin-top:0.4rem;">No topic yet</div>
+        </div>
+
+        <div class="card" style="margin:0;">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.6rem;">
+            <span style="font-weight:700;font-size:0.9rem;">🃏 Flashcards</span>
+            <span id="pg-fc-count" style="font-size:0.82rem;color:var(--muted);">0 cards</span>
+          </div>
+          <div class="prog"><div class="prog-fill" id="pg-fc-bar" style="width:0%"></div></div>
+          <div id="pg-fc-topic" style="font-size:0.78rem;color:var(--muted);margin-top:0.4rem;">No topic yet</div>
+        </div>
+
+        <div class="card" style="margin:0;">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.6rem;">
+            <span style="font-weight:700;font-size:0.9rem;">🎯 Quiz</span>
+            <span id="pg-qz-count" style="font-size:0.82rem;color:var(--muted);">0 taken</span>
+          </div>
+          <div class="prog"><div class="prog-fill" id="pg-qz-bar" style="width:0%"></div></div>
+          <div id="pg-qz-score" style="font-size:0.78rem;color:var(--muted);margin-top:0.4rem;">No score yet</div>
+        </div>
+
+        <div class="card" style="margin:0;">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.6rem;">
+            <span style="font-weight:700;font-size:0.9rem;">💡 Explain</span>
+            <span id="pg-ex-count" style="font-size:0.82rem;color:var(--muted);">0 uses</span>
+          </div>
+          <div class="prog"><div class="prog-fill" id="pg-ex-bar" style="width:0%"></div></div>
+          <div id="pg-ex-concept" style="font-size:0.78rem;color:var(--muted);margin-top:0.4rem;">No concept yet</div>
+        </div>
+
+        <div class="card" style="margin:0;">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.6rem;">
+            <span style="font-weight:700;font-size:0.9rem;">💬 Study Chat</span>
+            <span id="pg-chat-count" style="font-size:0.82rem;color:var(--muted);">0 messages</span>
+          </div>
+          <div class="prog"><div class="prog-fill" id="pg-chat-bar" style="width:0%"></div></div>
+          <div id="pg-chat-last" style="font-size:0.78rem;color:var(--muted);margin-top:0.4rem;">No messages yet</div>
+        </div>
+
+      </div>
+    </div>
 
     <!-- ═══ SUMMARY ══════════════════════════════════════════════════════════ -->
     <div id="panel-summary" class="panel active">
@@ -653,6 +733,43 @@
   }
   function errBox(msg) { return `<div class="alert alert-error">${msg}</div>`; }
 
+  // ── Safe fetch — always returns parsed JSON or throws a readable error ──────
+  async function apiFetch(url, body) {
+    const r = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body)
+    });
+    // guard: if response is not JSON (e.g. redirected to login page), throw clearly
+    const ct = r.headers.get('content-type') || '';
+    if (!ct.includes('application/json')) {
+      throw new Error(`Server returned non-JSON response (status ${r.status}). Please refresh and log in again.`);
+    }
+    const d = await r.json();
+    if (!r.ok || d.error) throw new Error(d.error || `Request failed (${r.status})`);
+    return d;
+  }
+
+  // ── Progress tracking ──────────────────────────────────────────────────────
+  const pg = { sum:0, plan:0, fc:0, qz:0, ex:0, chat:0 };
+  function updateProgress(tool, extra) {
+    const CAP = 10; // max uses before bar hits 100%
+    pg[tool]++;
+    const pct = Math.min(pg[tool] / CAP * 100, 100);
+    const barId   = { sum:'pg-sum-bar', plan:'pg-plan-bar', fc:'pg-fc-bar', qz:'pg-qz-bar', ex:'pg-ex-bar', chat:'pg-chat-bar' };
+    const cntId   = { sum:'pg-sum-count', plan:'pg-plan-count', fc:'pg-fc-count', qz:'pg-qz-count', ex:'pg-ex-count', chat:'pg-chat-count' };
+    const detId   = { sum:'pg-sum-topic', plan:'pg-plan-topic', fc:'pg-fc-topic', qz:'pg-qz-score', ex:'pg-ex-concept', chat:'pg-chat-last' };
+    const cntTxt  = { sum:`${pg.sum} use${pg.sum!==1?'s':''}`, plan:`${pg.plan} use${pg.plan!==1?'s':''}`,
+                      fc:`${pg.fc} card${pg.fc!==1?'s':''}`, qz:`${pg.qz} taken`,
+                      ex:`${pg.ex} use${pg.ex!==1?'s':''}`, chat:`${pg.chat} msg${pg.chat!==1?'s':''}` };
+    const bar = document.getElementById(barId[tool]);
+    const cnt = document.getElementById(cntId[tool]);
+    const det = document.getElementById(detId[tool]);
+    if (bar) bar.style.width = pct + '%';
+    if (cnt) cnt.textContent = cntTxt[tool];
+    if (det && extra) det.textContent = extra;
+  }
+
   // ── Summary ────────────────────────────────────────────────────────────────
   async function doSummary() {
     const topic = document.getElementById('sum-topic').value.trim();
@@ -662,12 +779,10 @@
     document.getElementById('sum-result').style.display = 'none';
     document.getElementById('sum-content').innerHTML = '';
     try {
-      const r = await fetch('/api/summary', { method:'POST',
-        headers:{'Content-Type':'application/json'}, body: JSON.stringify({topic,level}) });
-      const d = await r.json();
-      if (d.error) throw new Error(d.error);
+      const d = await apiFetch('/api/summary', { topic, level });
       document.getElementById('sum-content').innerHTML = md(d.summary);
       document.getElementById('sum-result').style.display = 'block';
+      updateProgress('sum', `Last: "${topic}" (${level})`);
     } catch(e) {
       document.getElementById('sum-content').innerHTML = errBox(e.message);
       document.getElementById('sum-result').style.display = 'block';
@@ -684,12 +799,10 @@
     document.getElementById('plan-result').style.display = 'none';
     document.getElementById('plan-content').innerHTML = '';
     try {
-      const r = await fetch('/api/study_plan', { method:'POST',
-        headers:{'Content-Type':'application/json'}, body: JSON.stringify({topic,days,hours_per_day:hours}) });
-      const d = await r.json();
-      if (d.error) throw new Error(d.error);
+      const d = await apiFetch('/api/study_plan', { topic, days, hours_per_day: hours });
       document.getElementById('plan-content').innerHTML = md(d.plan);
       document.getElementById('plan-result').style.display = 'block';
+      updateProgress('plan', `Last: "${topic}" · ${days}d/${hours}h`);
     } catch(e) {
       document.getElementById('plan-content').innerHTML = errBox(e.message);
       document.getElementById('plan-result').style.display = 'block';
@@ -705,10 +818,7 @@
     document.getElementById('fc-result').style.display = 'none';
     document.getElementById('fc-grid').innerHTML = '';
     try {
-      const r = await fetch('/api/flashcards', { method:'POST',
-        headers:{'Content-Type':'application/json'}, body: JSON.stringify({topic,count}) });
-      const d = await r.json();
-      if (d.error) throw new Error(d.error);
+      const d = await apiFetch('/api/flashcards', { topic, count });
       const grid = document.getElementById('fc-grid');
       grid.innerHTML = (d.flashcards||[]).map(c => `
         <div class="fc" onclick="this.classList.toggle('flipped')">
@@ -718,6 +828,8 @@
         </div>`).join('');
       document.getElementById('fc-lbl').textContent = `${d.flashcards.length} cards — ${topic}`;
       document.getElementById('fc-result').style.display = 'block';
+      pg.fc += d.flashcards.length - 1; // offset since updateProgress adds 1
+      updateProgress('fc', `Last: "${topic}" · ${d.flashcards.length} cards`);
     } catch(e) {
       document.getElementById('fc-grid').innerHTML = errBox(e.message);
       document.getElementById('fc-result').style.display = 'block';
@@ -734,17 +846,15 @@
     setLoading('btn-qz', true, '🎯 Start Quiz');
     qData = []; qAns = {};
     document.getElementById('quiz-result').style.display = 'none';
+    document.getElementById('quiz-result').innerHTML = '';
     try {
-      const r = await fetch('/api/quiz', { method:'POST',
-        headers:{'Content-Type':'application/json'}, body: JSON.stringify({topic,count}) });
-      const d = await r.json();
-      if (d.error) throw new Error(d.error);
+      const d = await apiFetch('/api/quiz', { topic, count });
       qData = d.quiz || [];
       renderQuiz(qData, topic);
       document.getElementById('quiz-result').style.display = 'block';
     } catch(e) {
-      document.getElementById('quiz-result').style.display = 'block';
       document.getElementById('quiz-result').innerHTML = errBox(e.message);
+      document.getElementById('quiz-result').style.display = 'block';
     } finally { setLoading('btn-qz', false, '🎯 Start Quiz'); }
   }
   function renderQuiz(qs, topic) {
@@ -792,6 +902,7 @@
           <button class="btn btn-primary" onclick="doQuiz()">Try Again 🔄</button>
         </div>
        </div>`);
+    updateProgress('qz', `Last score: ${pct}% (${ok}/${qData.length})`);
   }
 
   // ── Explain ────────────────────────────────────────────────────────────────
@@ -801,16 +912,15 @@
     if (!concept) { alert('Please enter a concept.'); return; }
     setLoading('btn-ex', true, '💡 Explain It');
     document.getElementById('ex-result').style.display = 'none';
+    document.getElementById('ex-content').innerHTML = '';
     try {
-      const r = await fetch('/api/explain', { method:'POST',
-        headers:{'Content-Type':'application/json'}, body: JSON.stringify({concept,style}) });
-      const d = await r.json();
-      if (d.error) throw new Error(d.error);
+      const d = await apiFetch('/api/explain', { concept, style });
       document.getElementById('ex-content').innerHTML = md(d.explanation);
       document.getElementById('ex-result').style.display = 'block';
+      updateProgress('ex', `Last: "${concept}" (${style})`);
     } catch(e) {
+      document.getElementById('ex-content').innerHTML = errBox(e.message);
       document.getElementById('ex-result').style.display = 'block';
-      document.getElementById('ex-result').innerHTML = errBox(e.message);
     } finally { setLoading('btn-ex', false, '💡 Explain It'); }
   }
 
@@ -832,12 +942,10 @@
     const b = document.getElementById('btn-chat'); b.disabled = true; b.textContent = '…';
     const thinking = appendMsg('bot', 'Thinking…');
     try {
-      const r = await fetch('/api/chat', { method:'POST',
-        headers:{'Content-Type':'application/json'}, body: JSON.stringify({question:q,context:chatCtx}) });
-      const d = await r.json();
-      if (d.error) throw new Error(d.error);
+      const d = await apiFetch('/api/chat', { question: q, context: chatCtx });
       thinking.textContent = d.answer;
       chatCtx = q + '\n' + d.answer;
+      updateProgress('chat', `Last: "${q.slice(0,40)}${q.length>40?'…':''}"`);
     } catch(e) {
       thinking.className = 'msg sys'; thinking.textContent = 'Error: ' + e.message;
     } finally { b.disabled = false; b.textContent = 'Send'; }
